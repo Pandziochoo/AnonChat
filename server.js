@@ -1,24 +1,32 @@
 const express = require("express");
-const http = require("http");
-const WebSocket = require("ws");
-const cors = require("cors");
-
 const app = express();
-app.use(cors());
+const path = require("path");
 
-const server = http.createServer(app);
+const PORT = process.env.PORT || 3001;
+
+// Serwowanie plików statycznych (frontend)
+app.use(express.static(path.join(__dirname)));
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "index.html"));
+});
+
+const server = app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
+
+const WebSocket = require("ws");
 const wss = new WebSocket.Server({ server });
 
 wss.on("connection", (ws) => {
+    console.log("Nowe połączenie WebSocket");
+
     ws.on("message", (message) => {
-        wss.clients.forEach((client) => {
+        console.log(`Odebrano: ${message}`);
+        wss.clients.forEach(client => {
             if (client !== ws && client.readyState === WebSocket.OPEN) {
                 client.send(message);
             }
         });
     });
 });
-
-app.get("/", (req, res) => res.send("AnonChat Backend Running"));
-
-server.listen(3001, () => console.log("Server running on port 3001"));
