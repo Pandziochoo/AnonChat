@@ -16,6 +16,7 @@ const server = app.listen(PORT, () => {
 });
 
 const WebSocket = require("ws");
+
 const wss = new WebSocket.Server({ server });
 
 wss.on("connection", (ws) => {
@@ -23,8 +24,10 @@ wss.on("connection", (ws) => {
 
     ws.on("message", (message) => {
         console.log(`Odebrano: ${message}`);
+
+        // Wysyłanie wiadomości do wszystkich klientów
         wss.clients.forEach(client => {
-            if (client !== ws && client.readyState === WebSocket.OPEN) {
+            if (client.readyState === WebSocket.OPEN) {
                 client.send(message);
             }
         });
